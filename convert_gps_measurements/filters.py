@@ -1,6 +1,7 @@
 """Data filters."""
 
 import argparse
+import json
 import logging
 from typing import Iterator
 
@@ -33,3 +34,23 @@ class NoOp(Filter):
 
     def filter(self, shapes: Iterator[Shape]) -> Iterator[Shape]:
         yield from shapes
+
+
+class Metadata(Filter):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.metadata_json = self.args.metadata_json
+
+    def filter(self, shapes):
+        data = None
+        if self.metadata_json is not None:
+            with self.metadata_json.open() as fd:
+                data = json.load(fd)
+        if data is not None:
+            for shape in shapes:
+                for point in shape.points:
+                    point.meta.update(data)
+                yield shape
+        else:
+            yield from shapes

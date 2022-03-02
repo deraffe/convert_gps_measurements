@@ -73,7 +73,7 @@ def main():
         nargs="+",
         choices=filters_map.keys(),
         metavar="FILTER",
-        default=("NoOp", ),
+        default=("Metadata", ),
         help="Filter"
     )
     pconvert.add_argument(
@@ -83,6 +83,12 @@ def main():
         metavar='FORMAT',
         default="Print",
         help="Output format"
+    )
+    pconvert.add_argument(
+        "--metadata-json",
+        type=pathlib.Path,
+        help=
+        "Metadata JSON file. Will be added as metadata to individual points."
     )
 
     args = parser.parse_args()

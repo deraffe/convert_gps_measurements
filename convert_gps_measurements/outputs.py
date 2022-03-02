@@ -4,7 +4,7 @@ import logging
 import pathlib
 from typing import Iterator
 
-from .geometries import Line, MeasurementPoint, Point, Polygon, Shape
+from .geometries import Shape
 
 log = logging.getLogger(__name__)
 
@@ -22,8 +22,7 @@ class OutputFormat:
     def log(self):
         return logging.getLogger(__class__.__name__)
 
-    def __init__(self, shapes: Iterator[Shape], output_path: pathlib.Path):
-        self.shapes = shapes
+    def __init__(self, output_path: pathlib.Path):
         self.output_path = output_path
 
     def format(self) -> Iterator[Shape]:
@@ -32,6 +31,6 @@ class OutputFormat:
 
 class Print(OutputFormat):
 
-    def format(self):
-        for shape in self.shapes:
+    def format(self, shapes: Iterator[Shape]):
+        for shape in shapes:
             print(shape)

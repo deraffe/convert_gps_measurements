@@ -29,10 +29,7 @@ class InputFormat:
     def log(self):
         return logging.getLogger(__class__.__name__)
 
-    def __init__(self, input_file: pathlib.Path):
-        self.input_file = input_file
-
-    def process_file(self) -> Iterator[Shape]:
+    def process_file(self, input_file: pathlib.Path) -> Iterator[Shape]:
         raise NotImplementedError
 
 
@@ -43,8 +40,8 @@ class GermanExcelCsvDialect(csv.excel):
 class Csv(InputFormat):
     """CSV input format"""
 
-    def process_file(self) -> Iterator[Shape]:
-        with self.input_file.open() as filehandle:
+    def process_file(self, input_file: pathlib.Path) -> Iterator[Shape]:
+        with input_file.open() as filehandle:
             csv_reader = csv.reader(filehandle, dialect=GermanExcelCsvDialect)
             connected_points = []
             for row in csv_reader:

@@ -1,6 +1,8 @@
 """Convert GPS measurements to various output formats while filtering the data."""
 import argparse
+import itertools
 import logging
+import pathlib
 
 from .filters import filters
 from .inputs import input_formats
@@ -24,7 +26,16 @@ def list_formats(args):
 
 def convert(args):
     """Convert one file format to another."""
-    raise NotImplementedError  # FIXME
+    parser = input_format_map[args.input_format]()
+    formatter = output_format_map[args.output_format](args.output_file)
+    filter_chain = map(lambda name: filters_map[name](), args.filter)
+    shapes = []
+    for input_file in args.input_files:
+        shapes.append(parser.process_file(input_file))
+    data_stream = itertools.chain.from_iterable(shapes)
+    for filter_instance in filter_chain:
+        data_stream = filter_instance.filter(data_stream)
+    formatter.format(data_stream)
 
 
 def main():
@@ -44,13 +55,16 @@ def main():
         "convert", aliases=["c"], help=convert.__doc__
     )
     pconvert.set_defaults(func=convert)
-    pconvert.add_argument("input_files", nargs="+", help="Input file(s)")
+    pconvert.add_argument(
+        "input_files", nargs="+", type=pathlib.Path, help="Input file(s)"
+    )
+    pconvert.add_argument("output_file", type=pathlib.Path, help="Output file")
     pconvert.add_argument(
         "--input-format",
         "-i",
         choices=input_format_map.keys(),
         metavar="FORMAT",
-        default=("Csv", ),
+        default="Csv",
         help="Input format"
     )
     pconvert.add_argument(
@@ -67,7 +81,7 @@ def main():
         "-o",
         choices=output_format_map.keys(),
         metavar='FORMAT',
-        default=("Print", ),
+        default="Print",
         help="Output format"
     )
 

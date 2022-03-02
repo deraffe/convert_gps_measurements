@@ -2,17 +2,18 @@
 import argparse
 import logging
 
+from .filters import filters
 from .inputs import input_formats
 from .outputs import output_formats
 
 log = logging.getLogger(__name__)
+input_format_map = {cls.__name__: cls for cls in input_formats}
+output_format_map = {cls.__name__: cls for cls in output_formats}
+filters_map = {cls.__name__: cls for cls in filters}
 
 
 def main():
     """Handle arguments and call routines."""
-    input_format_map = {cls.__name__: cls for cls in input_formats}
-    output_format_map = {cls.__name__: cls for cls in output_formats}
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--loglevel", default="WARNING", help="Loglevel", action="store"
@@ -24,7 +25,9 @@ def main():
         choices=input_format_map.keys(),
         help="Input format"
     )
-    parser.add_argument("--filter", "-f", nargs="+", help="Filter")
+    parser.add_argument(
+        "--filter", "-f", nargs="+", choices=filters_map.keys(), help="Filter"
+    )
     parser.add_argument(
         "--output-format",
         "-o",

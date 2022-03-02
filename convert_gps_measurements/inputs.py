@@ -46,23 +46,26 @@ class Csv(InputFormat):
             connected_points = []
             for row in csv_reader:
                 id, x, y, z, name = row
+                data = {"x": x, "y": y, "z": z, "meta": {"id": id}}
                 if name is None or name == '':
                     self.log.warn(
-                        "Throwing away line, since we don't know how to handle it: {row}",
-                        row=row
+                        "Throwing away line, since we don't know how to handle it: %s",
+                        row
                     )
                     continue
                 if name[-1] in SHAPE_CODES.keys():
                     # We found the end of a shape definition
-                    point = MeasurementPoint(id, x, y, z, name[:-1])
+                    data["meta"]["name"] = name[:-1]
+                    point = MeasurementPoint(**data)
                     connected_points.append(point)
-                    shape = SHAPE_CODES[name[-1]](connected_points)
+                    shape = SHAPE_CODES[name[-1]](points=connected_points)
                     connected_points = []
                     yield shape
                 else:
-                    point = MeasurementPoint(id, x, y, z, name)
+                    data["meta"]["name"] = name
+                    point = MeasurementPoint(**data)
                     connected_points.append(point)
             if len(connected_points) > 0:
                 self.log.warn(
-                    "Found leftover points: {points}", points=connected_points
+                    "Found leftover points: %s", connected_points
                 )

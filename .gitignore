@@ -1,0 +1,7 @@
+*.txt
+*.csv
+*.dbf
+*.qml
+*.shp
+*.shx
+__pycache__/

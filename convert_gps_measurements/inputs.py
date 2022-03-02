@@ -1,9 +1,9 @@
 """Input format parsers."""
 
+import argparse
 import csv
 import logging
 import pathlib
-import argparse
 from typing import Iterator, Type
 
 from .geometries import Line, MeasurementPoint, Point, Polygon, Shape
@@ -44,6 +44,20 @@ class GermanExcelCsvDialect(csv.excel):
 class Csv(InputFormat):
     """CSV input format"""
 
+    def create_point(self, data, name):
+        data["meta"]["name"] = name
+        try:
+            planum, object_code, object_number = name.split('_')
+            data["meta"].update({
+                "planum": planum,
+                "object_code": object_code,
+                "object_number": object_number
+            })
+        except ValueError:
+            self.log.warn("Cannot parse name: %s", name)
+        point = MeasurementPoint(**data)
+        return point
+
     def process_file(self, input_file: pathlib.Path) -> Iterator[Shape]:
         with input_file.open() as filehandle:
             csv_reader = csv.reader(filehandle, dialect=GermanExcelCsvDialect)
@@ -59,17 +73,13 @@ class Csv(InputFormat):
                     continue
                 if name[-1] in SHAPE_CODES.keys():
                     # We found the end of a shape definition
-                    data["meta"]["name"] = name[:-1]
-                    point = MeasurementPoint(**data)
+                    point = self.create_point(data, name[:-1])
                     connected_points.append(point)
                     shape = SHAPE_CODES[name[-1]](points=connected_points)
                     connected_points = []
                     yield shape
                 else:
-                    data["meta"]["name"] = name
-                    point = MeasurementPoint(**data)
+                    point = self.create_point(data, name)
                     connected_points.append(point)
             if len(connected_points) > 0:
-                self.log.warn(
-                    "Found leftover points: %s", connected_points
-                )
+                self.log.warn("Found leftover points: %s", connected_points)

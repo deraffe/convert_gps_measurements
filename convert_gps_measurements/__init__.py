@@ -4,19 +4,26 @@ Convert GPS measurements to various output formats while filtering the data.
 import argparse
 import logging
 
-log = logging.getLogger(__name__)
+from .inputs import input_formats
 
-input_formats = (input_csv, )
+log = logging.getLogger(__name__)
 
 
 def main():
     """Handle arguments and call routines."""
+    input_format_map = {cls.__name__: cls for cls in input_formats}
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--loglevel", default="WARNING", help="Loglevel", action="store"
     )
     parser.add_argument("input_files", nargs="+", help="Input file(s)")
-    parser.add_argument("--input-format", "-i", help="Input format")
+    parser.add_argument(
+        "--input-format",
+        "-i",
+        choices=input_format_map.keys(),
+        help="Input format"
+    )
     parser.add_argument("--filter", "-f", nargs="+", help="Filter")
     parser.add_argument("--output-format", "-o", help="Output format")
 

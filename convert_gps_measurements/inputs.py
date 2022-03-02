@@ -3,6 +3,7 @@
 import csv
 import logging
 import pathlib
+import argparse
 from typing import Iterator, Type
 
 from .geometries import Line, MeasurementPoint, Point, Polygon, Shape
@@ -24,6 +25,9 @@ class InputFormat:
     def __init_subclass__(cls, *args, **kwargs):
         super().__init_subclass__(*args, **kwargs)
         input_formats.add(cls)
+
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
 
     @property
     def log(self):

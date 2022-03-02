@@ -1,5 +1,6 @@
 """Data filters."""
 
+import argparse
 import logging
 from typing import Iterator
 
@@ -16,6 +17,9 @@ class Filter:
     def __init_subclass__(cls, *args, **kwargs):
         super().__init_subclass__(*args, **kwargs)
         filters.add(cls)
+
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
 
     @property
     def log(self):

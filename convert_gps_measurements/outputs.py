@@ -2,6 +2,7 @@
 
 import logging
 import pathlib
+import argparse
 from typing import Iterator
 
 from .geometries import Shape
@@ -18,12 +19,14 @@ class OutputFormat:
         super().__init_subclass__(*args, **kwargs)
         output_formats.add(cls)
 
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
+        self.output_path = self.args.output_file
+
     @property
     def log(self):
         return logging.getLogger(__class__.__name__)
 
-    def __init__(self, output_path: pathlib.Path):
-        self.output_path = output_path
 
     def format(self) -> Iterator[Shape]:
         raise NotImplementedError

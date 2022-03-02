@@ -26,9 +26,9 @@ def list_formats(args):
 
 def convert(args):
     """Convert one file format to another."""
-    parser = input_format_map[args.input_format]()
-    formatter = output_format_map[args.output_format](args.output_file)
-    filter_chain = map(lambda name: filters_map[name](), args.filter)
+    parser = input_format_map[args.input_format](args)
+    formatter = output_format_map[args.output_format](args)
+    filter_chain = map(lambda name: filters_map[name](args), args.filter)
     shapes = []
     for input_file in args.input_files:
         shapes.append(parser.process_file(input_file))

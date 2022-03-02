@@ -1,10 +1,9 @@
-"""
-Convert GPS measurements to various output formats while filtering the data.
-"""
+"""Convert GPS measurements to various output formats while filtering the data."""
 import argparse
 import logging
 
 from .inputs import input_formats
+from .outputs import output_formats
 
 log = logging.getLogger(__name__)
 
@@ -12,6 +11,7 @@ log = logging.getLogger(__name__)
 def main():
     """Handle arguments and call routines."""
     input_format_map = {cls.__name__: cls for cls in input_formats}
+    output_format_map = {cls.__name__: cls for cls in output_formats}
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -25,7 +25,12 @@ def main():
         help="Input format"
     )
     parser.add_argument("--filter", "-f", nargs="+", help="Filter")
-    parser.add_argument("--output-format", "-o", help="Output format")
+    parser.add_argument(
+        "--output-format",
+        "-o",
+        choices=output_format_map.keys(),
+        help="Output format"
+    )
 
     args = parser.parse_args()
 

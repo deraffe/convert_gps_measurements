@@ -58,6 +58,26 @@ class Csv(InputFormat):
         point = MeasurementPoint(**data)
         return point
 
+    def sanity_check_shape(self, shape: Shape) -> bool:
+        plana: set[str] = set()
+        object_numbers: set[str] = set()
+        for point in shape.points:
+            plana.add(str(point.meta["planum"]))
+            object_numbers.add(str(point.meta["object_number"]))
+        if len(plana) > 1:
+            self.log.warn(
+                "Found inconsistent planum (%s) in one object, skipping: %s",
+                ", ".join(plana), shape
+            )
+            return False
+        if len(object_numbers) > 1:
+            self.log.warn(
+                "Found inconsistent object number (%s) in one object, skipping: %s",
+                ", ".join(object_numbers), shape
+            )
+            return False
+        return True
+
     def process_file(self, input_file: pathlib.Path) -> Iterator[Shape]:
         with input_file.open() as filehandle:
             csv_reader = csv.reader(filehandle, dialect=GermanExcelCsvDialect)
@@ -77,6 +97,8 @@ class Csv(InputFormat):
                     connected_points.append(point)
                     shape = SHAPE_CODES[name[-1]](points=connected_points)
                     connected_points = []
+                    if not self.sanity_check_shape(shape):
+                        continue
                     yield shape
                 else:
                     point = self.create_point(data, name)

@@ -35,7 +35,7 @@ def configure_meta(args):
     try:
         with args.metadata_json.open() as fd:
             data = json.load(fd)
-    except EOFError:
+    except (EOFError, FileNotFoundError):
         pass
     if data is None:
         data = {}

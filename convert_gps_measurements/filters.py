@@ -78,11 +78,11 @@ class Survey2GIS(Filter):
         for shape in shapes:
             object_number = shape.points[0].meta["object_number"]
             object_code = shape.points[0].meta["object_code"]
-            if object_code in ("PR-A", "FG"):  # keep map size down
+            if object_code in ("PR-A", "PR-B", "FG"):
                 object_number_code_map[object_number][object_code].append(
                     shape
                 )
-            yield shape
+                yield shape
         for object_number, object_code_map in object_number_code_map.items():
             if "PR-A" in object_code_map:
                 # PR-B should always be the second point, thus it won't be in the map
@@ -92,10 +92,10 @@ class Survey2GIS(Filter):
                         "Found multiple PR objects for object number %s - continuing with first",
                         object_number
                     )
-                pr_shape = copy.deepcopy(shape_list[0])
-                pr_shape.update_point_meta({"object_code": "GR"})
-                self.wiggle_points(pr_shape)
-                yield pr_shape
+                gr_shape = copy.deepcopy(shape_list[0])
+                gr_shape.update_point_meta({"object_code": "GR"})
+                self.wiggle_points(gr_shape)
+                yield gr_shape
             else:
                 self.log.warn(
                     "No PR-A object found for object number %s", object_number

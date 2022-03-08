@@ -1,11 +1,13 @@
 """Data filters."""
 
 import argparse
+import collections
+import copy
 import json
 import logging
 from typing import Iterator
 
-from .geometries import Shape
+from .geometries import Polygon, Shape
 
 log = logging.getLogger(__name__)
 
@@ -49,8 +51,76 @@ class Metadata(Filter):
                 data = json.load(fd)
         if data is not None:
             for shape in shapes:
-                for point in shape.points:
-                    point.meta.update(data)
+                shape.update_point_meta(data)
                 yield shape
         else:
             yield from shapes
+
+
+class PrepareForSurvey2GIS(Filter):
+
+    def wiggle_points(
+        self,
+        shape: Shape,
+        adjustment: tuple[float, float, float] = (0.001, 0.001, 0.0)
+    ) -> Shape:
+        x_adj, y_adj, z_adj = adjustment
+        for point in shape.points:
+            point.x += x_adj
+            point.y += y_adj
+            point.z += z_adj
+        return shape
+
+    def filter(self, shapes):
+        object_number_code_map = collections.defaultdict(
+            lambda: collections.defaultdict(lambda: list())
+        )
+        for shape in shapes:
+            object_number = shape.points[0].meta["object_number"]
+            object_code = shape.points[0].meta["object_code"]
+            if object_code in ("PR-A", "FG"):  # keep map size down
+                object_number_code_map[object_number][object_code].append(
+                    shape
+                )
+            yield shape
+        for object_number, object_code_map in object_number_code_map.items():
+            if "PR-A" in object_code_map:
+                # PR-B should always be the second point, thus it won't be in the map
+                shape_list = object_code_map["PR-A"]
+                if len(shape_list) > 1:
+                    self.log.warn(
+                        "Found multiple PR objects for object number %s - continuing with first",
+                        object_number
+                    )
+                pr_shape = copy.deepcopy(shape_list[0])
+                pr_shape.update_point_meta({"object_code": "GR"})
+                self.wiggle_points(pr_shape)
+                yield pr_shape
+            else:
+                self.log.warn(
+                    "No PR-A object found for object number %s", object_number
+                )
+            if "FG" in object_code_map:
+                shape_list = object_code_map["FG"]
+                if len(shape_list) < 5:
+                    self.log.warn(
+                        "Only %d FG objects for object number %s, should be 5",
+                        len(shape_list), object_number
+                    )
+                first_three_pointshapes = shape_list[:3]
+                first_three_points = []
+                for pointshape in first_three_pointshapes:
+                    first_three_points.append(
+                        copy.deepcopy(pointshape.points[0])
+                    )
+                dummy_polygon = Polygon(points=first_three_points)
+                self.wiggle_points(dummy_polygon)
+                dummy_polygon.update_point_meta({
+                    "object_code": "G",
+                    "object_number": "999"
+                })
+                yield dummy_polygon
+            else:
+                self.log.warn(
+                    "No FG objects found for object number %s", object_number
+                )

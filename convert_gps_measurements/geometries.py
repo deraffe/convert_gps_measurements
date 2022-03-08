@@ -13,6 +13,10 @@ class MeasurementPoint(pydantic.BaseModel):
 class Shape(pydantic.BaseModel):
     points: list[MeasurementPoint]
 
+    def update_point_meta(self, update: dict):
+        for point in self.points:
+            point.meta.update(update)
+
 
 class Polygon(Shape):
     pass

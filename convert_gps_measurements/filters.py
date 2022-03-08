@@ -84,22 +84,6 @@ class Survey2GIS(Filter):
                 )
                 yield shape
         for object_number, object_code_map in object_number_code_map.items():
-            if "PR-A" in object_code_map:
-                # PR-B should always be the second point, thus it won't be in the map
-                shape_list = object_code_map["PR-A"]
-                if len(shape_list) > 1:
-                    self.log.warn(
-                        "Found multiple PR objects for object number %s - continuing with first",
-                        object_number
-                    )
-                gr_shape = copy.deepcopy(shape_list[0])
-                gr_shape.update_point_meta({"object_code": "GR"})
-                self.wiggle_points(gr_shape)
-                yield gr_shape
-            else:
-                self.log.warn(
-                    "No PR-A object found for object number %s", object_number
-                )
             if "FG" in object_code_map:
                 shape_list = object_code_map["FG"]
                 if len(shape_list) < 5:
@@ -123,5 +107,23 @@ class Survey2GIS(Filter):
                 yield dummy_polygon
             else:
                 self.log.warn(
-                    "No FG objects found for object number %s", object_number
+                    "No FG objects found for object number %s, skipping",
+                    object_number
+                )
+                continue
+            if "PR-A" in object_code_map:
+                # PR-B should always be the second point, thus it won't be in the map
+                shape_list = object_code_map["PR-A"]
+                if len(shape_list) > 1:
+                    self.log.warn(
+                        "Found multiple PR objects for object number %s - continuing with first",
+                        object_number
+                    )
+                gr_shape = copy.deepcopy(shape_list[0])
+                gr_shape.update_point_meta({"object_code": "GR"})
+                self.wiggle_points(gr_shape)
+                yield gr_shape
+            else:
+                self.log.warn(
+                    "No PR-A object found for object number %s", object_number
                 )

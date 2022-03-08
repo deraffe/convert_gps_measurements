@@ -26,7 +26,7 @@ class Filter:
 
     @property
     def log(self):
-        return logging.getLogger(__class__.__name__)
+        return logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def filter(self, shapes: Iterator[Shape]) -> Iterator[Shape]:
         raise NotImplementedError

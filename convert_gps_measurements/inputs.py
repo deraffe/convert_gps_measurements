@@ -31,7 +31,7 @@ class InputFormat:
 
     @property
     def log(self):
-        return logging.getLogger(__class__.__name__)
+        return logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def process_file(self, input_file: pathlib.Path) -> Iterator[Shape]:
         raise NotImplementedError

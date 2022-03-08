@@ -25,7 +25,7 @@ class OutputFormat:
 
     @property
     def log(self):
-        return logging.getLogger(__class__.__name__)
+        return logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
 
     def format(self) -> Iterator[Shape]:

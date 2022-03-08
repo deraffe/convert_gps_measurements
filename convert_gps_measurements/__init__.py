@@ -4,7 +4,6 @@ import itertools
 import json
 import logging
 import pathlib
-import readline
 
 from .filters import filters
 from .inputs import input_formats

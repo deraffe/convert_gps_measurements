@@ -9,6 +9,8 @@ from .filters import filters
 from .inputs import input_formats
 from .outputs import output_formats
 
+META_JSON_DEFAULT = "meta.json"
+
 log = logging.getLogger(__name__)
 input_format_map = {cls.__name__: cls for cls in input_formats}
 output_format_map = {cls.__name__: cls for cls in output_formats}
@@ -84,8 +86,9 @@ def main():
     )
     pconfiguremeta.set_defaults(func=configure_meta)
     pconfiguremeta.add_argument(
-        "metadata_json",
+        "--metadata_json",
         type=pathlib.Path,
+        default=pathlib.Path(META_JSON_DEFAULT),
         help="Metadata JSON file. Metadata will be written to it."
     )
 
@@ -125,6 +128,7 @@ def main():
     pconvert.add_argument(
         "--metadata-json",
         type=pathlib.Path,
+        default=pathlib.Path(META_JSON_DEFAULT),
         help=
         "Metadata JSON file. Will be added as metadata to individual points."
     )

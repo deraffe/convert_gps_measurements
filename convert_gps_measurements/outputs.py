@@ -93,6 +93,8 @@ class Survey2GIS_TSV(OutputFormat):
                             "z_name": "Z",
                         })
                         del point_dict["meta"]
+                        for coord in ("x", "y", "z"):
+                            point_dict[coord] = f"{point_dict[coord]:.3f}"
                         name = "{planum}_{object_code}_{object_number}".format(
                             **point_dict
                         )

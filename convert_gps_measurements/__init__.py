@@ -1,8 +1,10 @@
 """Convert GPS measurements to various output formats while filtering the data."""
 import argparse
 import itertools
+import json
 import logging
 import pathlib
+import readline
 
 from .filters import filters
 from .inputs import input_formats
@@ -22,6 +24,31 @@ def list_formats(args):
         print(name)
         for item in list:
             print("  " + item)
+
+
+def configure_meta(args):
+    """Configure metadata interactively."""
+    data_attrs = {
+        "project_name": "project name",
+        "alm_number": "ALM number",
+    }
+    data = None
+    try:
+        with args.metadata_json.open() as fd:
+            data = json.load(fd)
+    except EOFError:
+        pass
+    if data is None:
+        data = {}
+    for key, name in data_attrs.items():
+        default_value = data.get(key, '')
+        value = input(f"Please input {name} [default: {default_value}]: ")
+        if value != "":
+            data[key] = value
+        else:
+            data[key] = default_value
+    with args.metadata_json.open("w") as fd:
+        json.dump(data, fd)
 
 
 def convert(args):
@@ -50,6 +77,18 @@ def main():
         "list-formats", aliases=["l", "list"], help=list_formats.__doc__
     )
     plistformats.set_defaults(func=list_formats)
+
+    pconfiguremeta = subparsers.add_parser(
+        "configure-meta",
+        aliases=["configure", "meta"],
+        help=configure_meta.__doc__
+    )
+    pconfiguremeta.set_defaults(func=configure_meta)
+    pconfiguremeta.add_argument(
+        "metadata_json",
+        type=pathlib.Path,
+        help="Metadata JSON file. Metadata will be written to it."
+    )
 
     pconvert = subparsers.add_parser(
         "convert", aliases=["c"], help=convert.__doc__

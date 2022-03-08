@@ -71,7 +71,7 @@ class Survey2GIS_TSV(OutputFormat):
                 )
                 output = self.output_path / f"{object_number}.tsv"
             self.log.info(f"Writing {output}...")
-            with output.open('w') as csvfile:
+            with output.open('w', newline='') as csvfile:
                 fieldnames = [
                     'id', 'name_plus_type', 'x_name', 'x', 'y_name', 'y',
                     'z_name', 'z'

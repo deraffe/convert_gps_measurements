@@ -42,7 +42,7 @@ def main():
     """Handle arguments and call routines."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--loglevel", default="WARNING", help="Loglevel", action="store"
+        "--loglevel", default="INFO", help="Loglevel", action="store"
     )
     subparsers = parser.add_subparsers(title="Commands")
 

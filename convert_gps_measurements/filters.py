@@ -84,6 +84,14 @@ class Survey2GIS(Filter):
                 )
                 yield shape
         for object_number, object_code_map in object_number_code_map.items():
+            if not all(
+                map(lambda code: code in object_code_map, ("PR-A", "PR-B"))
+            ):
+                self.log.warn(
+                    "No PR-* objects found for object number %s, skipping",
+                    object_number
+                )
+                continue
             if "FG" in object_code_map:
                 shape_list = object_code_map["FG"]
                 if len(shape_list) < 5:

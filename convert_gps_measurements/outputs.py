@@ -63,13 +63,13 @@ class Survey2GIS_TSV(OutputFormat):
         for object_number, shape_list in object_number_map.items():
             meta = shape_list[0].points[0].meta
             if "alm_number" in meta:
-                output = self.output_path / f"{meta['alm_number']}_{object_number}.tsv"
+                output = self.output_path / f"{meta['alm_number']}_{object_number}.dat"
             else:
                 self.log.warn(
                     "No ALM number specified (add 'alm_number' to metadata) for object number %s, continuing without it",
                     object_number
                 )
-                output = self.output_path / f"{object_number}.tsv"
+                output = self.output_path / f"{object_number}.dat"
             self.log.info(f"Writing {output}...")
             with output.open('w', newline='') as csvfile:
                 fieldnames = [

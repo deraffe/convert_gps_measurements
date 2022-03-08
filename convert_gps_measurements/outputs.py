@@ -1,6 +1,7 @@
 """Output formatters."""
 
 import argparse
+import collections
 import csv
 import logging
 from typing import Iterator
@@ -46,34 +47,44 @@ class Survey2GIS_TSV(OutputFormat):
     }
 
     def format(self, shapes):
-        with self.output_path.open('w') as csvfile:
-            fieldnames = [
-                'id', 'name_plus_type', 'x_name', 'x', 'y_name', 'y', 'z_name',
-                'z'
-            ]
-            writer = csv.DictWriter(
-                csvfile,
-                fieldnames=fieldnames,
-                extrasaction='ignore',
-                dialect='excel-tab'
+        if not self.output_path.is_dir():
+            raise ValueError(
+                f"Output path '{self.output_path}' is not a directory."
             )
+        object_number_map = collections.defaultdict(lambda: list())
+        for shape in shapes:
+            object_number = shape.points[0].meta["object_number"]
+            object_number_map[object_number].append(shape)
 
-            for shape in shapes:
-                num_of_points = len(shape.points)
-                for i, point in enumerate(shape.points):
-                    point_dict = point.dict()
-                    point_dict.update(point_dict["meta"])
-                    point_dict.update({
-                        "x_name": "X",
-                        "y_name": "Y",
-                        "z_name": "Z",
-                    })
-                    del point_dict["meta"]
-                    name = "{planum}_{object_code}_{object_number}".format(
-                        **point_dict
-                    )
-                    type_code = ""
-                    if i == (num_of_points - 1):
-                        type_code = self.SHAPE_CODES[shape.__class__]
-                    point_dict["name_plus_type"] = f"{name}{type_code}"
-                    writer.writerow(point_dict)
+        for object_number, shape_list in object_number_map.items():
+            output = self.output_path / f"{object_number}.tsv"
+            with output.open('w') as csvfile:
+                fieldnames = [
+                    'id', 'name_plus_type', 'x_name', 'x', 'y_name', 'y',
+                    'z_name', 'z'
+                ]
+                writer = csv.DictWriter(
+                    csvfile,
+                    fieldnames=fieldnames,
+                    extrasaction='ignore',
+                    dialect='excel-tab'
+                )
+                for shape in shape_list:
+                    num_of_points = len(shape.points)
+                    for i, point in enumerate(shape.points):
+                        point_dict = point.dict()
+                        point_dict.update(point_dict["meta"])
+                        point_dict.update({
+                            "x_name": "X",
+                            "y_name": "Y",
+                            "z_name": "Z",
+                        })
+                        del point_dict["meta"]
+                        name = "{planum}_{object_code}_{object_number}".format(
+                            **point_dict
+                        )
+                        type_code = ""
+                        if i == (num_of_points - 1):
+                            type_code = self.SHAPE_CODES[shape.__class__]
+                        point_dict["name_plus_type"] = f"{name}{type_code}"
+                        writer.writerow(point_dict)

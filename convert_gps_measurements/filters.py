@@ -79,21 +79,34 @@ class Survey2GIS(Filter):
             object_number = shape.points[0].meta["object_number"]
             object_code = shape.points[0].meta["object_code"]
             if object_code in ("PR-A", "PR-B", "FG"):
+                self.log.debug(
+                    f"Adding {object_code} object {object_number} to map..."
+                )
                 object_number_code_map[object_number][object_code].append(
                     shape
                 )
-                yield shape
         for object_number, object_code_map in object_number_code_map.items():
-            if not all(
-                map(lambda code: code in object_code_map, ("PR-A", "PR-B"))
-            ):
+            if not "PR-A" in object_code_map:
                 self.log.warn(
-                    "No PR-* objects found for object number %s, skipping",
+                    "No PR-A objects found for object number %s, skipping",
                     object_number
                 )
                 continue
+            else:
+                found = False
+                for shape in object_code_map["PR-A"]:
+                    for point in shape.points:
+                        if point.meta.get("object_code", None) == "PR-B":
+                            found = True
+                            break
+                if not found:
+                    self.log.warn(
+                        "No PR-B objects found for object number %s, skipping",
+                        object_number
+                    )
             if "FG" in object_code_map:
                 shape_list = object_code_map["FG"]
+                yield from shape_list
                 if len(shape_list) < 5:
                     self.log.warn(
                         "Only %d FG objects for object number %s, should be 5",
@@ -122,6 +135,7 @@ class Survey2GIS(Filter):
             if "PR-A" in object_code_map:
                 # PR-B should always be the second point, thus it won't be in the map
                 shape_list = object_code_map["PR-A"]
+                yield from shape_list
                 if len(shape_list) > 1:
                     self.log.warn(
                         "Found multiple PR objects for object number %s - continuing with first",

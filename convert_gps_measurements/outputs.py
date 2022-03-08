@@ -53,7 +53,11 @@ class Survey2GIS_TSV(OutputFormat):
             )
         object_number_map = collections.defaultdict(lambda: list())
         for shape in shapes:
-            object_number = shape.points[0].meta["object_number"]
+            meta = shape.points[0].meta
+            if "real_object_number" in meta:
+                object_number = shape.points[0].meta["real_object_number"]
+            else:
+                object_number = shape.points[0].meta["object_number"]
             object_number_map[object_number].append(shape)
 
         for object_number, shape_list in object_number_map.items():

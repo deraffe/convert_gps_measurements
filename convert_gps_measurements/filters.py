@@ -117,7 +117,8 @@ class Survey2GIS(Filter):
                 self.wiggle_points(dummy_polygon)
                 dummy_polygon.update_point_meta({
                     "object_code": "G",
-                    "object_number": "999"
+                    "object_number": "999",
+                    "real_object_number": object_number,
                 })
                 yield dummy_polygon
             else:

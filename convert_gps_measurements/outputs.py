@@ -3,7 +3,6 @@
 import argparse
 import csv
 import logging
-import pathlib
 from typing import Iterator
 
 from .geometries import Line, Point, Polygon, Shape
@@ -64,6 +63,11 @@ class Survey2GIS_TSV(OutputFormat):
                 for i, point in enumerate(shape.points):
                     point_dict = point.dict()
                     point_dict.update(point_dict["meta"])
+                    point_dict.update({
+                        "x_name": "X",
+                        "y_name": "Y",
+                        "z_name": "Z",
+                    })
                     del point_dict["meta"]
                     name = "{planum}_{object_code}_{object_number}".format(
                         **point_dict

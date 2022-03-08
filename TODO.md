@@ -1,0 +1,2 @@
+- print help when run without arguments
+- print human-readable error when json metadata file is missing

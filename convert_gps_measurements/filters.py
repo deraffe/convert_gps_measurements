@@ -38,7 +38,7 @@ class NoOp(Filter):
         yield from shapes
 
 
-class Metadata(Filter):
+class JsonMetadata(Filter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,7 +57,7 @@ class Metadata(Filter):
             yield from shapes
 
 
-class PrepareForSurvey2GIS(Filter):
+class Survey2GIS(Filter):
 
     def wiggle_points(
         self,
